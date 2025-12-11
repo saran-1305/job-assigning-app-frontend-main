@@ -1,96 +1,105 @@
 // app/jobs/index.tsx
 import React from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-
-type Job = {
-  id: string;
-  title: string;
-  description: string;
-  status: "Open" | "Closed";
-};
-
-const JOBS: Job[] = [
-  {
-    id: "1",
-    title: "Job 1",
-    description:
-      "Buy milk for neighbour from nearby shop and drop at their house.",
-    status: "Open",
-  },
-  {
-    id: "2",
-    title: "Job 2",
-    description: "Pick up child from school and drop at home safely.",
-    status: "Open",
-  },
-];
+import { ScrollView, View, Text, TouchableOpacity } from "react-native";
+import { FontAwesome } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
 
 export default function JobsScreen() {
+  const router = useRouter();
+
   return (
-    // 🔹 same background as User Details / Create Account
-    <View className="flex-1 bg-[#F5F1EC]">
+    <View className="flex-1 bg-[#FFFFFF]">
+      {/* Main content */}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
           paddingTop: 40,
-          paddingBottom: 32,
+          paddingBottom: 140, // space so last card not hidden behind nav
         }}
-        showsVerticalScrollIndicator={false}
       >
-        {/* Title */}
-        <Text className="text-[32px] font-bold text-[#0D1821] mb-6">
+        <Text className="text-3xl font-bold text-[#111827] mb-6">
           Jobs Created
         </Text>
 
-        {/* Job cards */}
-        {JOBS.map((job) => (
-          <View
-            key={job.id}
-            // 🔹 same card colour family as your grey inputs / Aadhaar box
-            className="bg-[#F3EBE2] rounded-3xl px-5 py-4 mb-4"
-          >
-            {/* Header row */}
-            <View className="flex-row justify-between items-start mb-2">
-              <Text className="text-lg font-semibold text-[#0D1821]">
-                {job.title}
-              </Text>
-
-              {/* status pill – light beige, like secondary buttons */}
-              <View className="bg-[#E2D6CC] px-3 py-1 rounded-full">
-                <Text className="text-[11px] text-[#555555]">
-                  {job.status}
-                </Text>
-              </View>
-            </View>
-
-            {/* Description */}
-            <Text className="text-sm text-[#444444] mb-4">
-              {job.description}
-            </Text>
-
-            {/* Buttons */}
-            <View className="flex-row gap-3">
-              {/* light button */}
-              <TouchableOpacity className="flex-1 bg-[#E2D6CC] rounded-full py-2 items-center">
-                <Text className="text-[12px] font-medium text-[#333333]">
-                  View Applicants
-                </Text>
-              </TouchableOpacity>
-
-              {/* dark button – same as Continue button (#0D1821) */}
-              <TouchableOpacity className="flex-1 bg-[#0D1821] rounded-full py-2 items-center">
-                <Text className="text-[12px] font-medium text-white">
-                  Cancel Job
-                </Text>
-              </TouchableOpacity>
+        {/* Job card 1 */}
+        <View className="bg-[#F5F5F5] rounded-3xl p-5 mb-4">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-lg font-semibold text-[#111827]">Job 1</Text>
+            <View className="bg-[#E5E7EB] rounded-full px-4 py-1">
+              <Text className="text-xs text-[#111827]">Open</Text>
             </View>
           </View>
-        ))}
 
-        {/* placeholder empty cards */}
-        <View className="bg-[#F3EBE2] rounded-3xl h-36 mb-4 opacity-70" />
-        <View className="bg-[#F3EBE2] rounded-3xl h-36 mb-4 opacity-70" />
+          <Text className="text-sm text-[#111827] mb-4">
+            Buy milk for neighbour from nearby shop and drop at their house.
+          </Text>
+
+          <View className="flex-row justify-between mt-1">
+            <TouchableOpacity className="flex-1 mr-3 bg-[#E5E7EB] rounded-full py-3 items-center">
+              <Text className="text-sm text-[#111827]">View Applicants</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity className="flex-1 ml-3 bg-[#111827] rounded-full py-3 items-center">
+              <Text className="text-sm text-[#FFFFFF]">Cancel Job</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Job card 2 */}
+        <View className="bg-[#F5F5F5] rounded-3xl p-5 mb-4">
+          <View className="flex-row justify-between items-center mb-2">
+            <Text className="text-lg font-semibold text-[#111827]">Job 2</Text>
+            <View className="bg-[#E5E7EB] rounded-full px-4 py-1">
+              <Text className="text-xs text-[#111827]">Open</Text>
+            </View>
+          </View>
+
+          <Text className="text-sm text-[#111827] mb-4">
+            Pick up child from school and drop at home safely.
+          </Text>
+
+          <View className="flex-row justify-between mt-1">
+            <TouchableOpacity className="flex-1 mr-3 bg-[#E5E7EB] rounded-full py-3 items-center">
+              <Text className="text-sm text-[#111827]">View Applicants</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity className="flex-1 ml-3 bg-[#111827] rounded-full py-3 items-center">
+              <Text className="text-sm text-[#FFFFFF]">Cancel Job</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+
+        {/* Empty placeholders */}
+        <View className="bg-[#F5F5F5] rounded-3xl h-40 mb-4" />
+        <View className="bg-[#F5F5F5] rounded-3xl h-40" />
       </ScrollView>
+
+      {/* Bottom navigation bar (black & white) */}
+      <View className="flex-row justify-around items-center bg-[#FFFFFF] py-3 border-t border-[#E5E7EB]">
+        {/* Add job */}
+        <TouchableOpacity
+          onPress={() => router.push("/jobs/create" as any)}
+          className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
+        >
+          <FontAwesome name="plus" size={22} color="#111827" />
+        </TouchableOpacity>
+
+        {/* Jobs (current) */}
+        <TouchableOpacity
+          onPress={() => router.push("/jobs" as any)}
+          className="w-16 h-16 rounded-2xl bg-[#111827] items-center justify-center"
+        >
+          <FontAwesome name="briefcase" size={22} color="#FFFFFF" />
+        </TouchableOpacity>
+
+        {/* Profile (placeholder route for now) */}
+        <TouchableOpacity
+          onPress={() => router.push("/profile" as any)}
+          className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
+        >
+          <FontAwesome name="user" size={22} color="#111827" />
+        </TouchableOpacity>
+      </View>
     </View>
   );
 }
