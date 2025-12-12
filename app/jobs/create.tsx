@@ -35,7 +35,7 @@ export default function CreateJob() {
         Add New Job
       </Text>
 
-      {/* Job Title */}
+      {/* Title */}
       <Text className="text-gray-600 font-medium mb-1">Job Title</Text>
       <TextInput
         className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
@@ -44,7 +44,7 @@ export default function CreateJob() {
         onChangeText={setTitle}
       />
 
-      {/* Description */}
+      {/* Desc */}
       <Text className="text-gray-600 font-medium mb-1">Description</Text>
       <TextInput
         className="bg-[#E5E7EB] p-3 rounded-xl mb-4 h-28"
@@ -54,7 +54,7 @@ export default function CreateJob() {
         multiline
       />
 
-      {/* Submit Button */}
+      {/* Submit */}
       <TouchableOpacity
         onPress={handleCreate}
         className="bg-[#111827] p-4 rounded-xl mt-4"

@@ -30,16 +30,14 @@ export default function JobsScreen() {
     },
   ]);
 
-  // -------------------------------
-  // REMOVE job when Cancel is clicked
-  // -------------------------------
+  // REMOVE job 
   const handleCancel = (id: string) => {
     setJobs((prev) => prev.filter((job) => job.id !== id));
   };
 
-  // -------------------------------
-  // RECEIVING a new job from /jobs/create
-  // -------------------------------
+
+  // Create Job
+-
   useEffect(() => {
     if (params.newJob) {
       const newJob: Job = JSON.parse(params.newJob);
@@ -56,7 +54,6 @@ export default function JobsScreen() {
   return (
     <View className="flex-1 bg-[#FFFFFF]">
       
-      {/* MAIN SCREEN */}
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -65,13 +62,11 @@ export default function JobsScreen() {
         }}
       >
 
-        {/* HEADER + add button */}
         <View className="flex-row justify-between items-center mb-6">
           <Text className="text-3xl font-bold text-[#111827]">
             Jobs Created
           </Text>
 
-          {/* ➕ Add Job (Top Right) */}
           <TouchableOpacity
             onPress={() => router.push("/jobs/create")}
             className="bg-[#111827] w-10 h-10 rounded-full items-center justify-center"
@@ -80,7 +75,6 @@ export default function JobsScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* ---------------- JOB LIST ---------------- */}
         {jobs.map((job) => (
           <View
             key={job.id}
@@ -88,20 +82,17 @@ export default function JobsScreen() {
           >
             <View className="flex-row justify-between items-center mb-2">
 
-              {/* Job title */}
               <Text className="text-lg font-semibold text-[#111827]">
                 {job.title}
               </Text>
 
               <View className="flex-row items-center gap-2">
-                {/* Status */}
                 <View className="bg-[#E5E7EB] rounded-full px-4 py-1">
                   <Text className="text-xs text-[#111827]">
                     {job.status}
                   </Text>
                 </View>
 
-                {/* ✏ EDIT button */}
                 <TouchableOpacity
                   className="bg-[#111827] rounded-full px-3 py-1"
                 >
@@ -110,22 +101,17 @@ export default function JobsScreen() {
               </View>
             </View>
 
-            {/* Description */}
             <Text className="text-sm text-[#111827] mb-4">
               {job.description}
             </Text>
 
-            {/* Buttons */}
             <View className="flex-row justify-between mt-1">
 
-              {/* View Applicants */}
               <TouchableOpacity className="flex-1 mr-3 bg-[#E5E7EB] rounded-full py-3 items-center">
                 <Text className="text-sm text-[#111827]">
                   View Applicants
                 </Text>
               </TouchableOpacity>
-
-              {/* ❌ Cancel Job */}
               <TouchableOpacity
                 onPress={() => handleCancel(job.id)}
                 className="flex-1 ml-3 bg-[#111827] rounded-full py-3 items-center"
@@ -138,10 +124,8 @@ export default function JobsScreen() {
         ))}
       </ScrollView>
 
-      {/* ---------------- BOTTOM NAVIGATION ---------------- */}
       <View className="flex-row justify-around items-center bg-white py-3 border-t border-[#E5E7EB]">
 
-        {/* ➕ Add Job — active on this page */}
         <TouchableOpacity
           onPress={() => router.push("/jobs/create")}
           className="w-16 h-16 rounded-2xl bg-[#111827] items-center justify-center"
@@ -149,7 +133,6 @@ export default function JobsScreen() {
           <FontAwesome name="plus" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
-        {/* Jobs Icon */}
         <TouchableOpacity
           onPress={() => router.push("/jobs")}
           className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
@@ -157,7 +140,6 @@ export default function JobsScreen() {
           <FontAwesome name="briefcase" size={22} color="#111827" />
         </TouchableOpacity>
 
-        {/* Profile */}
         <TouchableOpacity
           className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
         >
