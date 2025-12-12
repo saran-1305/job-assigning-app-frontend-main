@@ -1,5 +1,5 @@
-import SignUp from "./auth/SignUp";
+import JobsScreen from "../app/jobs/index";
 
 export default function Index() {
-  return <SignUp />;
+  return <JobsScreen />
 }
