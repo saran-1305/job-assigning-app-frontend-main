@@ -9,8 +9,20 @@ export default function CreateJob() {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
 
+  const [startTime, setStartTime] = useState("");
+  const [payment, setPayment] = useState("");
+  const [location, setLocation] = useState("");
+  const [totalTime, setTotalTime] = useState("");
+
   const handleCreate = () => {
-    if (!title.trim() || !description.trim()) {
+    if (
+      !title.trim() ||
+      !description.trim() ||
+      !startTime.trim() ||
+      !payment.trim() ||
+      !location.trim() ||
+      !totalTime.trim()
+    ) {
       Alert.alert("Missing Fields", "Please fill all fields.");
       return;
     }
@@ -19,6 +31,10 @@ export default function CreateJob() {
       id: Date.now().toString(),
       title,
       description,
+      startTime,
+      payment,
+      location,
+      totalTime,
       status: "Open",
     };
 
@@ -35,7 +51,7 @@ export default function CreateJob() {
         Add New Job
       </Text>
 
-      {/* Title */}
+      {/* Job Title */}
       <Text className="text-gray-600 font-medium mb-1">Job Title</Text>
       <TextInput
         className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
@@ -44,7 +60,7 @@ export default function CreateJob() {
         onChangeText={setTitle}
       />
 
-      {/* Desc */}
+      {/* Description */}
       <Text className="text-gray-600 font-medium mb-1">Description</Text>
       <TextInput
         className="bg-[#E5E7EB] p-3 rounded-xl mb-4 h-28"
@@ -52,6 +68,43 @@ export default function CreateJob() {
         value={description}
         onChangeText={setDescription}
         multiline
+      />
+
+      {/* Starting time */}
+      <Text className="text-gray-600 font-medium mb-1">Starting Time</Text>
+      <TextInput
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="e.g., 5:00 PM"
+        value={startTime}
+        onChangeText={setStartTime}
+      />
+
+      {/* Total time */}
+      <Text className="text-gray-600 font-medium mb-1">Total Time</Text>
+      <TextInput
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="e.g., 2 hours"
+        value={totalTime}
+        onChangeText={setTotalTime}
+      />
+
+      {/* Location */}
+      <Text className="text-gray-600 font-medium mb-1">Location</Text>
+      <TextInput
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="Where the job is"
+        value={location}
+        onChangeText={setLocation}
+      />
+
+      {/* Payment */}
+      <Text className="text-gray-600 font-medium mb-1">payment</Text>
+      <TextInput
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="e.g., ₹300"
+        keyboardType="numeric"
+        value={payment}
+        onChangeText={setPayment}
       />
 
       {/* Submit */}
