@@ -1,14 +1,14 @@
 // app/jobs/create.tsx
-import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Alert,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
   View,
-  ScrollView,
 } from "react-native";
+import { useRouter } from "expo-router";
 import * as Location from "expo-location";
 
 export default function CreateJob() {
@@ -16,11 +16,32 @@ export default function CreateJob() {
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [startTime, setStartTime] = useState("");      // e.g. "Today 5:00 PM"
-  const [payment, setPayment] = useState("");          // e.g. "₹300"
-  const [jobLocation, setJobLocation] = useState("");  // text address
-  const [totalTime, setTotalTime] = useState("");      // e.g. "2 hours"
-  const [creating, setCreating] = useState(false);
+
+  const [startTime, setStartTime] = useState("");
+  const [payment, setPayment] = useState("");
+  const [totalTime, setTotalTime] = useState("");
+
+  const [locationText, setLocationText] = useState("");
+  const [locationPermission, setLocationPermission] =
+    useState<Location.PermissionStatus | null>(null);
+
+  // Ask for permission once when this screen opens
+  useEffect(() => {
+    (async () => {
+      const existing = await Location.getForegroundPermissionsAsync();
+
+      if (existing.status !== "granted") {
+        const requested = await Location.requestForegroundPermissionsAsync();
+        setLocationPermission(requested.status);
+
+        if (requested.status !== "granted") {
+          console.log("Location permission NOT granted yet");
+        }
+      } else {
+        setLocationPermission(existing.status);
+      }
+    })();
+  }, []);
 
   const handleCreate = async () => {
     if (
@@ -28,28 +49,44 @@ export default function CreateJob() {
       !description.trim() ||
       !startTime.trim() ||
       !payment.trim() ||
-      !jobLocation.trim() ||
-      !totalTime.trim()
+      !totalTime.trim() ||
+      !locationText.trim()
     ) {
-      Alert.alert("Missing Fields", "Please fill all the fields.");
+      Alert.alert("Missing fields", "Please fill all fields.");
       return;
     }
 
-    setCreating(true);
+    let coords: { latitude: number; longitude: number } | null = null;
 
-    // Try to convert the address into coordinates (optional)
-    let coordinates: { latitude: number; longitude: number } | null = null;
     try {
-      const results = await Location.geocodeAsync(jobLocation.trim());
-      if (results.length > 0) {
-        const { latitude, longitude } = results[0];
-        coordinates = { latitude, longitude };
+      let status = locationPermission;
+
+      // If we still don't have permission, try again here
+      if (status !== "granted") {
+        const requested = await Location.requestForegroundPermissionsAsync();
+        status = requested.status;
+        setLocationPermission(status);
+      }
+
+      if (status === "granted") {
+        const results = await Location.geocodeAsync(locationText);
+        if (results && results.length > 0) {
+          coords = {
+            latitude: results[0].latitude,
+            longitude: results[0].longitude,
+          };
+        } else {
+          console.log("Geocode returned empty array for:", locationText);
+        }
+      } else {
+        Alert.alert(
+          "Location permission not granted",
+          "We will only save the text address. To save a map pin, please allow location access for Expo Go in your phone settings."
+        );
       }
     } catch (err) {
       console.log("Geocoding failed (will still save job):", err);
-      // We just skip coordinates if geocoding fails
     }
-    console.log("JOB LOCATION:", jobLocation.trim(), coordinates);
 
     const newJob = {
       id: Date.now().toString(),
@@ -57,15 +94,17 @@ export default function CreateJob() {
       description: description.trim(),
       startTime: startTime.trim(),
       payment: payment.trim(),
-      location: jobLocation.trim(),   // text location
       totalTime: totalTime.trim(),
-      coordinates,                    // { lat, lng } or null
+      location: {
+        address: locationText.trim(),
+        coords, // may be null if permission/geocode failed
+      },
       status: "Open",
     };
 
-    setCreating(false);
+    console.log("JOB LOCATION:", locationText, coords);
 
-    // Send job object to Jobs page
+    // Send to Jobs page
     router.push({
       pathname: "/jobs",
       params: { newJob: JSON.stringify(newJob) },
@@ -74,27 +113,26 @@ export default function CreateJob() {
 
   return (
     <ScrollView
-      className="flex-1 bg-white"
-      contentContainerStyle={{ padding: 24, paddingTop: 60, paddingBottom: 40 }}
-      keyboardShouldPersistTaps="handled"
+      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
+      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 }}
     >
       <Text className="text-3xl font-bold text-[#111827] mb-8">
         Add New Job
       </Text>
 
       {/* Job title */}
-      <Text className="text-gray-700 font-medium mb-1">Job Title</Text>
+      <Text className="text-gray-600 font-medium mb-1">Job Title</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-4"
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
         placeholder="Enter job title"
         value={title}
         onChangeText={setTitle}
       />
 
       {/* Description */}
-      <Text className="text-gray-700 font-medium mb-1">Description</Text>
+      <Text className="text-gray-600 font-medium mb-1">Description</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-4 h-32"
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4 h-28"
         placeholder="Describe the job"
         value={description}
         onChangeText={setDescription}
@@ -102,50 +140,48 @@ export default function CreateJob() {
       />
 
       {/* Starting time */}
-      <Text className="text-gray-700 font-medium mb-1">Starting time</Text>
+      <Text className="text-gray-600 font-medium mb-1">Starting time</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-4"
-        placeholder="Eg. Today 5:00 PM"
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="e.g. Today 5:30 PM"
         value={startTime}
         onChangeText={setStartTime}
       />
 
       {/* Payment */}
-      <Text className="text-gray-700 font-medium mb-1">payment</Text>
+      <Text className="text-gray-600 font-medium mb-1">payment</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-4"
-        placeholder="Eg. ₹300"
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="e.g. ₹200"
         keyboardType="numeric"
         value={payment}
         onChangeText={setPayment}
       />
 
-      {/* Location (any place, not just current) */}
-      <Text className="text-gray-700 font-medium mb-1">Location</Text>
+      {/* Location (typed address → geocoded) */}
+      <Text className="text-gray-600 font-medium mb-1">Location</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-4"
-        placeholder="Eg. T. Nagar, Chennai"
-        value={jobLocation}
-        onChangeText={setJobLocation}
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        placeholder="Street, area, city…"
+        value={locationText}
+        onChangeText={setLocationText}
       />
 
       {/* Total time */}
-      <Text className="text-gray-700 font-medium mb-1">Total time</Text>
+      <Text className="text-gray-600 font-medium mb-1">Total time</Text>
       <TextInput
-        className="bg-[#E5E7EB] rounded-xl px-4 py-3 mb-6"
-        placeholder="Eg. 2 hours"
+        className="bg-[#E5E7EB] p-3 rounded-xl mb-6"
+        placeholder="e.g. 1 hour"
         value={totalTime}
         onChangeText={setTotalTime}
       />
 
-      {/* Create button */}
       <TouchableOpacity
+        className="bg-[#111827] p-4 rounded-xl"
         onPress={handleCreate}
-        disabled={creating}
-        className="bg-[#111827] rounded-xl py-4"
       >
         <Text className="text-white text-center text-lg font-bold">
-          {creating ? "Creating..." : "Create Job"}
+          Create Job
         </Text>
       </TouchableOpacity>
     </ScrollView>
