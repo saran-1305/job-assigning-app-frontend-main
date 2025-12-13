@@ -1,4 +1,5 @@
 // app/jobs/create.tsx
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -8,180 +9,171 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { useRouter } from "expo-router";
-import * as Location from "expo-location";
+
+type Params = {
+  mode?: string; // "create" | "edit"
+  job?: string;  // JSON string when editing
+};
+
+type JobFormState = {
+  id?: string;
+  title: string;
+  description: string;
+  startTime: string;
+  payment: string;
+  locationText: string;
+  totalTime: string;
+};
 
 export default function CreateJob() {
   const router = useRouter();
+  const { mode, job } = useLocalSearchParams<Params>();
+  const isEdit = mode === "edit";
 
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
+  const [form, setForm] = useState<JobFormState>({
+    id: undefined,
+    title: "",
+    description: "",
+    startTime: "",
+    payment: "",
+    locationText: "",
+    totalTime: "",
+  });
 
-  const [startTime, setStartTime] = useState("");
-  const [payment, setPayment] = useState("");
-  const [totalTime, setTotalTime] = useState("");
-
-  const [locationText, setLocationText] = useState("");
-  const [locationPermission, setLocationPermission] =
-    useState<Location.PermissionStatus | null>(null);
-
-  // Ask for permission once when this screen opens
+  // Prefill when editing
   useEffect(() => {
-    (async () => {
-      const existing = await Location.getForegroundPermissionsAsync();
-
-      if (existing.status !== "granted") {
-        const requested = await Location.requestForegroundPermissionsAsync();
-        setLocationPermission(requested.status);
-
-        if (requested.status !== "granted") {
-          console.log("Location permission NOT granted yet");
-        }
-      } else {
-        setLocationPermission(existing.status);
+    if (isEdit && job) {
+      try {
+        const parsed = JSON.parse(job as string) as any;
+        setForm({
+          id: parsed.id,
+          title: parsed.title ?? "",
+          description: parsed.description ?? "",
+          startTime: parsed.startTime ?? "",
+          payment: parsed.payment ?? "",
+          locationText: parsed.locationText ?? "",
+          totalTime: parsed.totalTime ?? "",
+        });
+      } catch (e) {
+        console.warn("Invalid job data passed to edit screen", e);
       }
-    })();
-  }, []);
+    }
+  }, [isEdit, job]);
 
-  const handleCreate = async () => {
-    if (
-      !title.trim() ||
-      !description.trim() ||
-      !startTime.trim() ||
-      !payment.trim() ||
-      !totalTime.trim() ||
-      !locationText.trim()
-    ) {
-      Alert.alert("Missing fields", "Please fill all fields.");
+  const updateField = (key: keyof JobFormState, value: string) => {
+    setForm((prev) => ({ ...prev, [key]: value }));
+  };
+
+  const handleSubmit = () => {
+    if (!form.title.trim() || !form.description.trim()) {
+      Alert.alert("Missing Fields", "Please fill at least title and description.");
       return;
     }
 
-    let coords: { latitude: number; longitude: number } | null = null;
-
-    try {
-      let status = locationPermission;
-
-      // If we still don't have permission, try again here
-      if (status !== "granted") {
-        const requested = await Location.requestForegroundPermissionsAsync();
-        status = requested.status;
-        setLocationPermission(status);
-      }
-
-      if (status === "granted") {
-        const results = await Location.geocodeAsync(locationText);
-        if (results && results.length > 0) {
-          coords = {
-            latitude: results[0].latitude,
-            longitude: results[0].longitude,
-          };
-        } else {
-          console.log("Geocode returned empty array for:", locationText);
-        }
-      } else {
-        Alert.alert(
-          "Location permission not granted",
-          "We will only save the text address. To save a map pin, please allow location access for Expo Go in your phone settings."
-        );
-      }
-    } catch (err) {
-      console.log("Geocoding failed (will still save job):", err);
-    }
-
-    const newJob = {
-      id: Date.now().toString(),
-      title: title.trim(),
-      description: description.trim(),
-      startTime: startTime.trim(),
-      payment: payment.trim(),
-      totalTime: totalTime.trim(),
-      location: {
-        address: locationText.trim(),
-        coords, // may be null if permission/geocode failed
-      },
+    const jobToSend = {
+      id: form.id ?? Date.now().toString(),
+      title: form.title.trim(),
+      description: form.description.trim(),
       status: "Open",
+      startTime: form.startTime.trim(),
+      payment: form.payment.trim(),
+      locationText: form.locationText.trim(),
+      totalTime: form.totalTime.trim(),
     };
 
-    console.log("JOB LOCATION:", locationText, coords);
-
-    // Send to Jobs page
-    router.push({
-      pathname: "/jobs",
-      params: { newJob: JSON.stringify(newJob) },
-    });
+    if (isEdit) {
+      router.push({
+        pathname: "/jobs",
+        params: { updatedJob: JSON.stringify(jobToSend) },
+      });
+    } else {
+      router.push({
+        pathname: "/jobs",
+        params: { newJob: JSON.stringify(jobToSend) },
+      });
+    }
   };
 
   return (
     <ScrollView
-      style={{ flex: 1, backgroundColor: "#FFFFFF" }}
-      contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 60, paddingBottom: 40 }}
+      contentContainerStyle={{
+        flexGrow: 1,
+        backgroundColor: "#FFFFFF",
+        paddingHorizontal: 24,
+        paddingTop: 40,
+        paddingBottom: 32,
+      }}
+      keyboardShouldPersistTaps="handled"
     >
       <Text className="text-3xl font-bold text-[#111827] mb-8">
-        Add New Job
+        {isEdit ? "Edit Job" : "Add New Job"}
       </Text>
 
       {/* Job title */}
-      <Text className="text-gray-600 font-medium mb-1">Job Title</Text>
+      <Text className="text-[#4B5563] font-medium mb-1">Job Title</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
         placeholder="Enter job title"
-        value={title}
-        onChangeText={setTitle}
+        value={form.title}
+        onChangeText={(t) => updateField("title", t)}
       />
 
       {/* Description */}
-      <Text className="text-gray-600 font-medium mb-1">Description</Text>
+      <Text className="text-[#4B5563] font-medium mb-1">Description</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-4 h-28"
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4 min-h-[96px]"
         placeholder="Describe the job"
-        value={description}
-        onChangeText={setDescription}
+        value={form.description}
+        onChangeText={(t) => updateField("description", t)}
         multiline
       />
 
       {/* Starting time */}
-      <Text className="text-gray-600 font-medium mb-1">Starting time</Text>
+      <Text className="text-[#4B5563] font-medium mb-1">Starting time</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
-        placeholder="e.g. Today 5:30 PM"
-        value={startTime}
-        onChangeText={setStartTime}
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
+        placeholder="e.g. Today 5:00 PM"
+        value={form.startTime}
+        onChangeText={(t) => updateField("startTime", t)}
       />
 
       {/* Payment */}
-      <Text className="text-gray-600 font-medium mb-1">payment</Text>
+      <Text className="text-[#4B5563] font-medium mb-1">payment</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
         placeholder="e.g. ₹200"
         keyboardType="numeric"
-        value={payment}
-        onChangeText={setPayment}
+        value={form.payment}
+        onChangeText={(t) => updateField("payment", t)}
       />
 
-      {/* Location (typed address → geocoded) */}
-      <Text className="text-gray-600 font-medium mb-1">Location</Text>
+      {/* Location (free text for now) */}
+      <Text className="text-[#4B5563] font-medium mb-1">Location</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-4"
-        placeholder="Street, area, city…"
-        value={locationText}
-        onChangeText={setLocationText}
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-1"
+        placeholder="Where will this job happen?"
+        value={form.locationText}
+        onChangeText={(t) => updateField("locationText", t)}
       />
+      <Text className="text-xs text-[#9CA3AF] mb-4">
+        Example: &quot;Near T Nagar bus stand, Chennai&quot;
+      </Text>
 
       {/* Total time */}
-      <Text className="text-gray-600 font-medium mb-1">Total time</Text>
+      <Text className="text-[#4B5563] font-medium mb-1">Total time</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-xl mb-6"
-        placeholder="e.g. 1 hour"
-        value={totalTime}
-        onChangeText={setTotalTime}
+        className="bg-[#E5E7EB] p-3 rounded-2xl mb-6"
+        placeholder="e.g. 30 minutes"
+        value={form.totalTime}
+        onChangeText={(t) => updateField("totalTime", t)}
       />
 
       <TouchableOpacity
-        className="bg-[#111827] p-4 rounded-xl"
-        onPress={handleCreate}
+        onPress={handleSubmit}
+        className="bg-[#111827] p-4 rounded-2xl mt-2"
       >
         <Text className="text-white text-center text-lg font-bold">
-          Create Job
+          {isEdit ? "Save Changes" : "Create Job"}
         </Text>
       </TouchableOpacity>
     </ScrollView>
