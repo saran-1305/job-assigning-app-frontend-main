@@ -3,6 +3,7 @@ import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Linking,
   ScrollView,
   Text,
   TouchableOpacity,
@@ -48,6 +49,13 @@ export default function JobApplicationsScreen() {
     },
   ]);
 
+  const openInMaps = (location: string) => {
+    if (!location) return;
+    const query = encodeURIComponent(location);
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    Linking.openURL(url);
+  };
+
   return (
     <View className="flex-1 bg-white">
       <ScrollView
@@ -90,28 +98,44 @@ export default function JobApplicationsScreen() {
               {job.description}
             </Text>
 
-            <Text className="text-xs text-gray-600">
-               {job.location} • {job.totalTime}
+            <Text className="text-xs text-gray-600 mb-2">
+              {job.location} • {job.totalTime}
             </Text>
+
+            {/* Open in Google Maps (inside card) */}
+            <TouchableOpacity
+              onPress={() => openInMaps(job.location)}
+              className="mt-1 self-start bg-[#111827] px-4 py-2 rounded-full"
+            >
+              <Text className="text-xs text-white">
+                Open in Google Maps
+              </Text>
+            </TouchableOpacity>
           </TouchableOpacity>
         ))}
       </ScrollView>
+
       {/* BOTTOM NAVBAR */}
       <View className="flex-row justify-around items-center bg-white border-t border-[#E5E7EB] py-3">
-
-        {/* CURRENT SCREEN */}
-        <TouchableOpacity onPress={() => router.push("/jobs")}  className="w-16 h-16 rounded-2xl bg-[#FFFFFF] border border-[#111827] items-center justify-center">
+        {/* Jobs (other tab) */}
+        <TouchableOpacity
+          onPress={() => router.push("/jobs")}
+          className="w-16 h-16 rounded-2xl bg-[#FFFFFF] border border-[#111827] items-center justify-center"
+        >
           <FontAwesome name="plus" size={22} color="#111827" />
         </TouchableOpacity>
 
-        {/* Briefcase  */}
-        <TouchableOpacity onPress={() => router.push("/jobs/jobapplication")} className="w-16 h-16 rounded-2xl border bg-[#111827] items-center justify-center">
-          <FontAwesome name="briefcase" size={22} color="#FFFFFF"/>
+        {/* CURRENT SCREEN: Applications */}
+        <TouchableOpacity
+          onPress={() => router.push("/jobs/jobapplication")}
+          className="w-16 h-16 rounded-2xl border bg-[#111827] items-center justify-center"
+        >
+          <FontAwesome name="briefcase" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
         {/* Profile */}
         <TouchableOpacity
-          //onPress={() => router.push("/profile")}
+          // onPress={() => router.push("/profile")}
           className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
         >
           <FontAwesome name="user" size={22} color="#111827" />

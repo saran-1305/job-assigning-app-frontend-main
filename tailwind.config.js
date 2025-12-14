@@ -5,16 +5,16 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        bgmain: "#FFFFFF",
-        card: "#F4F4F4",
-        accent: "#0D1821",
-        textmain: "#0D1821",
-        textmuted: "#0D1821",
+        bgmain: "#FFF2E6",   // soft warm cream (background)
+        card:   "#FFE0CC",   // slightly deeper card
+        accent: "#FF7F50",   // bright orange CTA
+        textmain: "#111827", // main dark text
+        textmuted: "#4B5563" // secondary text
       },
       borderRadius: {
         xl: "0.9rem",
       },
     },
-    },
+  },
   plugins: [],
 };

@@ -1,11 +1,13 @@
+// app/jobs/jobdetails.tsx
 import { useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
-    Alert,
-    ScrollView,
-    Text,
-    TouchableOpacity,
-    View,
+  Alert,
+  Linking,
+  ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 type Job = {
@@ -19,8 +21,16 @@ type Job = {
 
 export default function JobDetailsScreen() {
   const { job } = useLocalSearchParams<{ job: string }>();
-  const parsedJob: Job = JSON.parse(job);
 
+  if (!job) {
+    return (
+      <View className="flex-1 bg-white items-center justify-center">
+        <Text className="text-[#111827]">No job data found.</Text>
+      </View>
+    );
+  }
+
+  const parsedJob: Job = JSON.parse(job);
   const [applied, setApplied] = useState(false);
 
   const handleApply = () => {
@@ -28,10 +38,17 @@ export default function JobDetailsScreen() {
     Alert.alert("Applied", "You have successfully applied for this job.");
   };
 
+  const openInMaps = () => {
+    if (!parsedJob.location) return;
+    const query = encodeURIComponent(parsedJob.location);
+    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
+    Linking.openURL(url);
+  };
+
   return (
     <ScrollView
       className="flex-1 bg-white"
-      contentContainerStyle={{ padding: 24, paddingTop: 50 }}
+      contentContainerStyle={{ padding: 24, paddingTop: 50, paddingBottom: 40 }}
     >
       {/* Title */}
       <Text className="text-3xl font-bold text-[#111827] mb-4">
@@ -53,10 +70,10 @@ export default function JobDetailsScreen() {
       {/* Details */}
       <View className="mb-6">
         <Text className="text-sm text-gray-600 mb-2">
-           Location: {parsedJob.location}
+          Location: {parsedJob.location}
         </Text>
         <Text className="text-sm text-gray-600">
-           Duration: {parsedJob.totalTime}
+          Duration: {parsedJob.totalTime}
         </Text>
       </View>
 
@@ -64,12 +81,22 @@ export default function JobDetailsScreen() {
       <TouchableOpacity
         disabled={applied}
         onPress={handleApply}
-        className={`rounded-xl py-4 items-center ${
+        className={`rounded-xl py-4 items-center mb-3 ${
           applied ? "bg-gray-400" : "bg-[#111827]"
         }`}
       >
         <Text className="text-white font-bold text-lg">
           {applied ? "Applied" : "Apply for Job"}
+        </Text>
+      </TouchableOpacity>
+
+      {/* Open in Google Maps Button */}
+      <TouchableOpacity
+        onPress={openInMaps}
+        className="rounded-xl py-4 items-center border border-[#111827]"
+      >
+        <Text className="text-[#111827] font-semibold text-lg">
+          Open in Google Maps
         </Text>
       </TouchableOpacity>
     </ScrollView>
