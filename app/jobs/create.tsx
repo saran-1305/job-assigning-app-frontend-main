@@ -6,8 +6,7 @@ import {
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity,
-  View,
+  TouchableOpacity
 } from "react-native";
 
 type Params = {
@@ -98,30 +97,30 @@ export default function CreateJob() {
     <ScrollView
       contentContainerStyle={{
         flexGrow: 1,
-        backgroundColor: "#FFFFFF",
+        backgroundColor: "#FFF2E6",
         paddingHorizontal: 24,
         paddingTop: 40,
         paddingBottom: 32,
       }}
       keyboardShouldPersistTaps="handled"
     >
-      <Text className="text-3xl font-bold text-[#111827] mb-8">
+      <Text className="text-3xl font-bold text-textmain mb-8">
         {isEdit ? "Edit Job" : "Add New Job"}
       </Text>
 
       {/* Job title */}
-      <Text className="text-[#4B5563] font-medium mb-1">Job Title</Text>
+      <Text className="text-textmuted font-medium mb-1">Job Title</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
+        className="bg-card p-3 rounded-2xl mb-4"
         placeholder="Enter job title"
         value={form.title}
         onChangeText={(t) => updateField("title", t)}
       />
 
       {/* Description */}
-      <Text className="text-[#4B5563] font-medium mb-1">Description</Text>
+      <Text className="text-textmuted font-medium mb-1">Description</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4 min-h-[96px]"
+        className="bg-card p-3 rounded-2xl mb-4 min-h-[96px]"
         placeholder="Describe the job"
         value={form.description}
         onChangeText={(t) => updateField("description", t)}
@@ -129,18 +128,18 @@ export default function CreateJob() {
       />
 
       {/* Starting time */}
-      <Text className="text-[#4B5563] font-medium mb-1">Starting time</Text>
+      <Text className="text-textmuted font-medium mb-1">Starting time</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
+        className="bg-card p-3 rounded-2xl mb-4"
         placeholder="e.g. Today 5:00 PM"
         value={form.startTime}
         onChangeText={(t) => updateField("startTime", t)}
       />
 
       {/* Payment */}
-      <Text className="text-[#4B5563] font-medium mb-1">payment</Text>
+      <Text className="text-textmuted font-medium mb-1">payment</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-4"
+        className="bg-card p-3 rounded-2xl mb-4"
         placeholder="e.g. ₹200"
         keyboardType="numeric"
         value={form.payment}
@@ -148,21 +147,21 @@ export default function CreateJob() {
       />
 
       {/* Location (free text for now) */}
-      <Text className="text-[#4B5563] font-medium mb-1">Location</Text>
+      <Text className="text-textmuted font-medium mb-1">Location</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-1"
+        className="bg-card p-3 rounded-2xl mb-1"
         placeholder="Where will this job happen?"
         value={form.locationText}
         onChangeText={(t) => updateField("locationText", t)}
       />
-      <Text className="text-xs text-[#9CA3AF] mb-4">
+      <Text className="text-xs text-textmuted mb-4">
         Example: &quot;Near T Nagar bus stand, Chennai&quot;
       </Text>
 
       {/* Total time */}
-      <Text className="text-[#4B5563] font-medium mb-1">Total time</Text>
+      <Text className="text-textmuted font-medium mb-1">Total time</Text>
       <TextInput
-        className="bg-[#E5E7EB] p-3 rounded-2xl mb-6"
+        className="bg-card p-3 rounded-2xl mb-6"
         placeholder="e.g. 30 minutes"
         value={form.totalTime}
         onChangeText={(t) => updateField("totalTime", t)}
@@ -170,7 +169,7 @@ export default function CreateJob() {
 
       <TouchableOpacity
         onPress={handleSubmit}
-        className="bg-[#111827] p-4 rounded-2xl mt-2"
+        className="bg-accent p-4 rounded-2xl mt-2"
       >
         <Text className="text-white text-center text-lg font-bold">
           {isEdit ? "Save Changes" : "Create Job"}

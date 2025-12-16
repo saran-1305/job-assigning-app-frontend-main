@@ -81,9 +81,8 @@ export default function JobDetailsScreen() {
       <TouchableOpacity
         disabled={applied}
         onPress={handleApply}
-        className={`rounded-xl py-4 items-center mb-3 ${
-          applied ? "bg-gray-400" : "bg-[#111827]"
-        }`}
+        className={`rounded-xl py-4 items-center mb-3 ${applied ? "bg-gray-400" : "bg-[#111827]"
+          }`}
       >
         <Text className="text-white font-bold text-lg">
           {applied ? "Applied" : "Apply for Job"}
@@ -93,12 +92,20 @@ export default function JobDetailsScreen() {
       {/* Open in Google Maps Button */}
       <TouchableOpacity
         onPress={openInMaps}
-        className="rounded-xl py-4 items-center border border-[#111827]"
+        className="flex-row items-center justify-center gap-2 rounded-xl border border-[#111827] py-4"
       >
-        <Text className="text-[#111827] font-semibold text-lg">
+        <Text className=""
+          style={{
+            fontSize: 18,
+            fontWeight: "600",
+            color: "#111827",
+            includeFontPadding: false,
+          }}
+        >
           Open in Google Maps
         </Text>
       </TouchableOpacity>
+
     </ScrollView>
   );
 }

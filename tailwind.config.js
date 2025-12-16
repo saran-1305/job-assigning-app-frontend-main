@@ -11,9 +11,6 @@ module.exports = {
         textmain: "#111827", // main dark text
         textmuted: "#4B5563" // secondary text
       },
-      borderRadius: {
-        xl: "0.9rem",
-      },
     },
   },
   plugins: [],

@@ -80,9 +80,9 @@ export default function UserDetails() {
   };
 
   return (
-    <View className="flex-1 px-6 justify-center">
+    <View className="flex-1 px-6 justify-center bg-bgmain">
       <View className="items-center mb-6">
-        <FontAwesome name="paper-plane" size={48} color="#0D1821" />
+        <FontAwesome name="paper-plane" size={48} color="textmain" />
         <Text className="text-3xl mt-8 font-bold text-textmain">
           User Details
         </Text>
@@ -90,7 +90,7 @@ export default function UserDetails() {
 
       <Text className="text-textmuted font-medium">Full Name</Text>
       <TextInput
-        className="bg-[#c7c7c7] p-3 rounded-xl mt-1 mb-3"
+        className="bg-card p-3 rounded-xl mt-1 mb-3"
         placeholder="Enter your full name"
         value={name}
         onChangeText={setName}
@@ -98,7 +98,7 @@ export default function UserDetails() {
 
       <Text className="text-textmuted font-medium">Age</Text>
       <TextInput
-        className="bg-[#c7c7c7] p-3 rounded-xl mt-1 mb-3"
+        className="bg-card p-3 rounded-xl mt-1 mb-3"
         placeholder="Enter your age"
         keyboardType="numeric"
         value={age}
@@ -112,7 +112,7 @@ export default function UserDetails() {
 
       <TouchableOpacity
         onPress={Aadhaar}
-        className="bg-[#c7c7c7] rounded-xl p-4 mt-2 mb-3"
+        className="bg-card rounded-xl p-4 mt-2 mb-3"
       >
         {aadhaarImage ? (
           <Image
@@ -121,8 +121,8 @@ export default function UserDetails() {
             resizeMode="cover"
           />
         ) : (
-          <View className="items-center justify-center py-8">
-            <FontAwesome name="upload" size={28} color="#0D1821" />
+          <View className="items-center bg-card justify-center py-8">
+            <FontAwesome name="upload" size={28} color="textmain" />
             <Text className="text-textmuted mt-2">Upload Aadhaar</Text>
           </View>
         )}

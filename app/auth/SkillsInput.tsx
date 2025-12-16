@@ -1,6 +1,6 @@
 // components/SkillsInput.tsx
 import React, { useMemo, useState } from "react";
-import { View, Text, TextInput, Pressable, ScrollView } from "react-native";
+import { Pressable, ScrollView, Text, TextInput, View } from "react-native";
 
 const HELPING_SKILLS = [
   "Buying milk for neighbours",
@@ -80,7 +80,7 @@ export function SkillsInput({ value, onChange }: SkillsInputProps) {
           <Pressable
             key={skill}
             onPress={() => removeSkill(skill)}
-            className="px-3 py-1 rounded-full bg-[#c7c7c7] flex-row items-center mb-1"
+            className="px-3 py-1 rounded-full bg-card flex-row items-center mb-1"
           >
             <Text className="text-xs mr-1 text-black">{skill}</Text>
             <Text className="text-xs text-gray-700">✕</Text>
@@ -93,7 +93,7 @@ export function SkillsInput({ value, onChange }: SkillsInputProps) {
         placeholder="Type a helping skill, e.g. 'buy milk'"
         value={query}
         onChangeText={setQuery}
-        className="bg-[#c7c7c7] p-3 rounded-xl text-sm text-black"
+        className="bg-card p-3 rounded-xl text-sm text-black"
         placeholderTextColor="#6e6e6e"
         returnKeyType="done"
         onSubmitEditing={() => {

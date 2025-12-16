@@ -60,6 +60,7 @@ export default function Otp() {
       contentContainerStyle={{
         flexGrow: 1,
         justifyContent: "center",
+        backgroundColor: "#FFF2E6",
         paddingHorizontal: 24,
         paddingVertical: 15,
       }}
@@ -69,7 +70,7 @@ export default function Otp() {
     >
       <View>
         <View className="items-center mb-6">
-          <FontAwesome name="paper-plane" size={48} color="#0D1821" />
+          <FontAwesome name="paper-plane" size={48} color="textmain" />
           <Text className="text-3xl mt-8 font-bold text-textmain">
             Enter OTP
           </Text>
@@ -83,7 +84,7 @@ export default function Otp() {
 
         <Text className="text-textmuted font-medium">OTP</Text>
         <TextInput
-          className="bg-[#c7c7c7] p-3 rounded-xl mt-1 mb-3 text-center tracking-[8px]"
+          className="bg-card p-3 rounded-xl mt-1 mb-3 text-center tracking-[8px]"
           placeholder="000000"
           keyboardType="number-pad"
           maxLength={6}

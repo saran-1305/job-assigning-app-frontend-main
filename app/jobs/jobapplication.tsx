@@ -7,7 +7,7 @@ import {
   ScrollView,
   Text,
   TouchableOpacity,
-  View
+  View,
 } from "react-native";
 
 type Job = {
@@ -57,7 +57,8 @@ export default function JobApplicationsScreen() {
   };
 
   return (
-    <View className="flex-1 bg-white">
+    /* APP BACKGROUND */
+    <View className="flex-1 bg-[#F0FDF4]">
       <ScrollView
         contentContainerStyle={{
           paddingHorizontal: 20,
@@ -65,7 +66,7 @@ export default function JobApplicationsScreen() {
           paddingBottom: 40,
         }}
       >
-        <Text className="text-3xl font-bold text-[#111827] mb-6">
+        <Text className="text-3xl font-bold text-[#14532D] mb-6">
           Available Jobs
         </Text>
 
@@ -79,22 +80,21 @@ export default function JobApplicationsScreen() {
                 params: { job: JSON.stringify(job) },
               })
             }
-            className="bg-[#F5F5F5] rounded-3xl p-5 mb-4"
+            className="bg-[#cff5de] rounded-3xl p-5 mb-4"
           >
-            {/* Header */}
             <View className="flex-row justify-between items-start mb-2">
-              <Text className="text-lg font-semibold text-[#111827] flex-1 mr-2">
+              <Text className="text-lg font-semibold text-[#14532D] flex-1 mr-2">
                 {job.title}
               </Text>
 
-              <View className="bg-[#E5E7EB] rounded-full px-3 py-1">
-                <Text className="text-xs text-[#111827]">
+              <View className="bg-[#DCFCE7] rounded-full px-3 py-1">
+                <Text className="text-xs text-[#14532D]">
                   {job.payment}
                 </Text>
               </View>
             </View>
 
-            <Text className="text-sm text-[#111827] mb-2">
+            <Text className="text-sm text-[#14532D] mb-2">
               {job.description}
             </Text>
 
@@ -102,10 +102,9 @@ export default function JobApplicationsScreen() {
               {job.location} • {job.totalTime}
             </Text>
 
-            {/* Open in Google Maps (inside card) */}
             <TouchableOpacity
               onPress={() => openInMaps(job.location)}
-              className="mt-1 self-start bg-[#111827] px-4 py-2 rounded-full"
+              className="mt-1 self-start bg-[#166534] px-4 py-2 rounded-full"
             >
               <Text className="text-xs text-white">
                 Open in Google Maps
@@ -116,29 +115,25 @@ export default function JobApplicationsScreen() {
       </ScrollView>
 
       {/* BOTTOM NAVBAR */}
-      <View className="flex-row justify-around items-center bg-white border-t border-[#E5E7EB] py-3">
-        {/* Jobs (other tab) */}
+      <View className="flex-row justify-around items-center bg-[##F0FDF4] border-t border-[#cff5de] py-3">
         <TouchableOpacity
           onPress={() => router.push("/jobs")}
-          className="w-16 h-16 rounded-2xl bg-[#FFFFFF] border border-[#111827] items-center justify-center"
+          className="w-16 h-16 rounded-2xl bg-white border border-[#166534] items-center justify-center"
         >
-          <FontAwesome name="plus" size={22} color="#111827" />
+          <FontAwesome name="plus" size={22} color="#166534" />
         </TouchableOpacity>
 
-        {/* CURRENT SCREEN: Applications */}
         <TouchableOpacity
           onPress={() => router.push("/jobs/jobapplication")}
-          className="w-16 h-16 rounded-2xl border bg-[#111827] items-center justify-center"
+          className="w-16 h-16 rounded-2xl bg-[#166534] items-center justify-center"
         >
           <FontAwesome name="briefcase" size={22} color="#FFFFFF" />
         </TouchableOpacity>
 
-        {/* Profile */}
         <TouchableOpacity
-          // onPress={() => router.push("/profile")}
-          className="w-16 h-16 rounded-2xl border border-[#111827] items-center justify-center"
+          className="w-16 h-16 rounded-2xl bg-white border border-[#166534] items-center justify-center"
         >
-          <FontAwesome name="user" size={22} color="#111827" />
+          <FontAwesome name="user" size={22} color="#166534" />
         </TouchableOpacity>
       </View>
     </View>

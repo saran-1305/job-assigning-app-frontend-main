@@ -45,6 +45,7 @@ export default function SignUp() {
     <KeyboardAwareScrollView
       contentContainerStyle={{
         flexGrow: 1,
+        backgroundColor: "#FFF2E6",
         justifyContent: "center",
         paddingHorizontal: 24,
         paddingVertical: 15,
@@ -54,15 +55,15 @@ export default function SignUp() {
       keyboardOpeningTime={0}
     >
       <View className="items-center mb-6">
-        <FontAwesome name="paper-plane" size={48} color="#0D1821" />
+        <FontAwesome name="paper-plane" size={48} color="textmain" />
         <Text className="text-3xl mt-8 font-bold text-textmain">
-          Create Account
+          Login
         </Text>
       </View>
 
       <Text className="text-textmuted font-medium">Phone Number</Text>
       <TextInput
-        className="bg-[#c7c7c7] p-3 rounded-xl mt-1 mb-3"
+        className="bg-card p-3 rounded-xl mt-1 mb-3"
         placeholder="Enter phone number"
         keyboardType="phone-pad"
         value={phone}
@@ -79,11 +80,11 @@ export default function SignUp() {
       </TouchableOpacity>
 
       <TouchableOpacity
-        onPress={() => router.push("/auth/Login" as any)}
+        onPress={() => router.push("/auth/SignUp" as any)}
         className="mt-4"
       >
         <Text className="text-center text-textmuted text-sm underline">
-          Already have an account? Login
+          Dont Have An Account? Sign up
         </Text>
       </TouchableOpacity>
     </KeyboardAwareScrollView>
