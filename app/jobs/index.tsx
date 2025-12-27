@@ -148,7 +148,7 @@ export default function JobsScreen() {
 
         {/* Profile */}
         <TouchableOpacity
-          //onPress={() => router.push("/profile")}
+        onPress={() => router.push("/profile")}
           className="w-16 h-16 rounded-2xl border border-textmain items-center justify-center"
         >
           <FontAwesome name="user" size={22} color="textmain" />
