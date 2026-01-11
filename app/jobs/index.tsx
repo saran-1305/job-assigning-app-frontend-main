@@ -145,6 +145,13 @@ export default function JobsScreen() {
         <TouchableOpacity onPress={() => router.push("/jobs/jobapplication")} className="w-16 h-16 rounded-2xl border border-textmain items-center justify-center">
           <FontAwesome name="briefcase" size={22} color="textmain" />
         </TouchableOpacity>
+        {/* Explore */}
+        <TouchableOpacity
+        onPress={() => router.push("/jobs/explore")}
+        className="w-16 h-16 rounded-2xl border border-textmain items-center justify-center"
+        >
+        <FontAwesome name="search" size={22} color="textmain" />
+        </TouchableOpacity>
 
         {/* Profile */}
         <TouchableOpacity
