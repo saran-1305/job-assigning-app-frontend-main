@@ -1,6 +1,7 @@
 import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
+import { addDoc, collection, serverTimestamp } from "firebase/firestore/lite";
 import React, { useState } from "react";
 import {
   Alert,
@@ -10,23 +11,19 @@ import {
   TouchableOpacity,
   View,
 } from "react-native";
-import { SkillsInput } from "./SkillsInput";
-
-// 🔹 Firestore imports
-import { addDoc, collection, serverTimestamp } from "firebase/firestore";
 import { db } from "../../firebaseConfig";
+import { SkillsInput } from "./SkillsInput";
 
 export default function UserDetails() {
   const router = useRouter();
-
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
   const [aadhaarImage, setAadhaarImage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  const Aadhaar = async () => {
-    let result = await ImagePicker.launchImageLibraryAsync({
+  const handleAadhaarUpload = async () => {
+    const result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.Images,
       allowsEditing: true,
       quality: 0.8,
@@ -49,7 +46,6 @@ export default function UserDetails() {
     try {
       setLoading(true);
 
-      // 🔹 Save user to Firestore (no Storage)
       await addDoc(collection(db, "users"), {
         name,
         age: Number(age),
@@ -58,12 +54,10 @@ export default function UserDetails() {
         createdAt: serverTimestamp(),
       });
 
-      // ✅ Show success and then go to Jobs page
       Alert.alert("Saved", "Your details have been saved!", [
         {
           text: "OK",
           onPress: () => {
-            // go to Jobs page
             router.replace("/jobs" as never);
           },
         },
@@ -105,13 +99,11 @@ export default function UserDetails() {
         onChangeText={setAge}
       />
 
-      {/* Skills selector */}
       <SkillsInput value={skills} onChange={setSkills} />
 
       <Text className="text-textmuted font-medium mt-2">Aadhaar Card</Text>
-
       <TouchableOpacity
-        onPress={Aadhaar}
+        onPress={handleAadhaarUpload}
         className="bg-card rounded-xl p-4 mt-2 mb-3"
       >
         {aadhaarImage ? (

@@ -1,5 +1,5 @@
-// app/jobs/jobdetails.tsx
-import { useLocalSearchParams } from "expo-router";
+import { FontAwesome } from "@expo/vector-icons";
+import { router, useLocalSearchParams } from "expo-router";
 import React, { useState } from "react";
 import {
   Alert,
@@ -17,6 +17,7 @@ type Job = {
   payment: string;
   location: string;
   totalTime: string;
+  isAccepted?: boolean; // 👈 KEY FLAG
 };
 
 export default function JobDetailsScreen() {
@@ -24,8 +25,8 @@ export default function JobDetailsScreen() {
 
   if (!job) {
     return (
-      <View className="flex-1 bg-white items-center justify-center">
-        <Text className="text-[#111827]">No job data found.</Text>
+      <View className="flex-1 items-center justify-center bg-[#F0FDF4]">
+        <Text className="text-[#14532D]">No job data found</Text>
       </View>
     );
   }
@@ -39,73 +40,98 @@ export default function JobDetailsScreen() {
   };
 
   const openInMaps = () => {
-    if (!parsedJob.location) return;
     const query = encodeURIComponent(parsedJob.location);
-    const url = `https://www.google.com/maps/search/?api=1&query=${query}`;
-    Linking.openURL(url);
+    Linking.openURL(
+      `https://www.google.com/maps/search/?api=1&query=${query}`
+    );
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-white"
-      contentContainerStyle={{ padding: 24, paddingTop: 50, paddingBottom: 40 }}
-    >
-      {/* Title */}
-      <Text className="text-3xl font-bold text-[#111827] mb-4">
-        {parsedJob.title}
-      </Text>
+    <View className="flex-1 bg-[#F0FDF4]">
+      <ScrollView contentContainerStyle={{ padding: 24, paddingBottom: 40 }}>
+        {/* HEADER */}
+        <View className="mb-6 mt-10">
+          <Text className="text-[#14532D] text-3xl font-bold">
+            Job Details
+          </Text>
+        </View>
 
-      {/* Payment */}
-      <View className="bg-[#E5E7EB] self-start px-4 py-1 rounded-full mb-4">
-        <Text className="text-sm text-[#111827]">
-          {parsedJob.payment}
-        </Text>
-      </View>
+        {/* JOB CARD */}
+        <View className="bg-white rounded-3xl border border-[#DCFCE7] p-5 mb-6">
+          {/* TITLE + PAYMENT */}
+          <View className="flex-row justify-between items-start mb-2">
+            <Text className="text-[#14532D] text-xl font-semibold flex-1 mr-3">
+              {parsedJob.title}
+            </Text>
 
-      {/* Description */}
-      <Text className="text-base text-[#111827] mb-6">
-        {parsedJob.description}
-      </Text>
+            <View className="bg-[#DCFCE7] px-3 py-1 rounded-full">
+              <Text className="text-[#166534] text-xs font-medium">
+                {parsedJob.payment}
+              </Text>
+            </View>
+          </View>
 
-      {/* Details */}
-      <View className="mb-6">
-        <Text className="text-sm text-gray-600 mb-2">
-          Location: {parsedJob.location}
-        </Text>
-        <Text className="text-sm text-gray-600">
-          Duration: {parsedJob.totalTime}
-        </Text>
-      </View>
+          {/* DESCRIPTION */}
+          <Text className="text-[#14532D] text-sm mb-4">
+            {parsedJob.description}
+          </Text>
 
-      {/* Apply Button */}
-      <TouchableOpacity
-        disabled={applied}
-        onPress={handleApply}
-        className={`rounded-xl py-4 items-center mb-3 ${applied ? "bg-gray-400" : "bg-[#111827]"
-          }`}
-      >
-        <Text className="text-white font-bold text-lg">
-          {applied ? "Applied" : "Apply for Job"}
-        </Text>
-      </TouchableOpacity>
+          {/* META */}
+          <View className="mb-4">
+            <Text className="text-xs text-gray-600">
+              Location: {parsedJob.location}
+            </Text>
+            <Text className="text-xs text-gray-600 mt-1">
+              Duration: {parsedJob.totalTime}
+            </Text>
+          </View>
 
-      {/* Open in Google Maps Button */}
-      <TouchableOpacity
-        onPress={openInMaps}
-        className="flex-row items-center justify-center gap-2 rounded-xl border border-[#111827] py-4"
-      >
-        <Text className=""
-          style={{
-            fontSize: 18,
-            fontWeight: "600",
-            color: "#111827",
-            includeFontPadding: false,
-          }}
+          {/* MAP BUTTON */}
+          <TouchableOpacity
+            onPress={openInMaps}
+            className="border border-[#166534] py-3 rounded-full mb-4"
+          >
+            <Text className="text-center text-[#166534] font-medium">
+              View on Map
+            </Text>
+          </TouchableOpacity>
+
+          {/* APPLY BUTTON (ONLY FOR NON-ACCEPTED JOBS) */}
+          {!parsedJob.isAccepted && (
+            <TouchableOpacity
+              disabled={applied}
+              onPress={handleApply}
+              className={`py-4 rounded-full ${
+                applied ? "bg-gray-300" : "bg-[#166534]"
+              }`}
+            >
+              <Text className="text-center text-white font-bold">
+                {applied ? "Applied" : "Apply for Job"}
+              </Text>
+            </TouchableOpacity>
+          )}
+
+          {/* ACCEPTED BADGE */}
+          {parsedJob.isAccepted && (
+            <View className="bg-[#DCFCE7] py-3 rounded-full">
+              <Text className="text-center text-[#14532D] font-semibold">
+                Accepted Job
+              </Text>
+            </View>
+          )}
+        </View>
+
+        {/* BACK BUTTON */}
+        <TouchableOpacity
+          onPress={() => router.back()}
+          className="flex-row items-center justify-center gap-2"
         >
-          Open in Google Maps
-        </Text>
-      </TouchableOpacity>
-
-    </ScrollView>
+          <FontAwesome name="arrow-left" size={16} color="#14532D" />
+          <Text className="text-[#14532D] font-medium">
+            Back
+          </Text>
+        </TouchableOpacity>
+      </ScrollView>
+    </View>
   );
 }

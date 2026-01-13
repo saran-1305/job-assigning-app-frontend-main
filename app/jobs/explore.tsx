@@ -1,58 +1,88 @@
+import React, { useState } from "react";
 import {
-  View,
-  Text,
+  Alert,
+  Image,
   ScrollView,
-  RefreshControl,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { useState } from "react";
-import { useRouter } from "expo-router";
 
-export default function Explore() {
-  const router = useRouter();
-  const [refreshing, setRefreshing] = useState(false);
+type SkillPost = {
+  id: string;
+  name: string;
+  skill: string;
+  description: string;
+  photo: string;
+};
 
-  const posts = [
+export default function ExploreScreen() {
+  const [skills] = useState<SkillPost[]>([
     {
-      id: 1,
-      name: "Saran",
-      message: "Looking for part-time helpers near Anna Nagar.",
+      id: "1",
+      name: "Arjun",
+      skill: "Piano Player",
+      description: "Classical & light music. 5+ years experience.",
+      photo: "https://images.unsplash.com/photo-1511379938547-c1f69419868d",
     },
-    {
-      id: 2,
-      name: "Ravi",
-      message: "Completed house cleaning work today 👍",
-    },
-  ];
+  ]);
 
-  const onRefresh = () => {
-    setRefreshing(true);
-    setTimeout(() => setRefreshing(false), 1000);
+  const requestJob = (skill: string, name: string) => {
+    Alert.alert(
+      "Job Requested",
+      `Your request for ${skill} has been sent to ${name}`
+    );
   };
 
   return (
-    <ScrollView
-      className="flex-1 bg-bgmain px-4 pt-6"
-      refreshControl={
-        <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-      }
-    >
-      <Text className="text-2xl font-bold text-textmain mb-4">
-        Explore
-      </Text>
-
-      {posts.map((post) => (
-        <View
-          key={post.id}
-          className="bg-card rounded-2xl p-4 mb-4"
-        >
-          <Text className="font-bold text-textmain mb-1">
-            {post.name}
-          </Text>
-          <Text className="text-textmuted">
-            {post.message}
-          </Text>
+    <View className="flex-1 bg-bgmain">
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 120 }}>
+        {/* HEADER */}
+        <View className="mt-10 mb-6">
+          <Text className="text-textmain text-xl">Welcome</Text>
+          <Text className="text-textmain text-3xl font-bold">Name</Text>
+          <Text className="text-texmain text-xl text-center font-bold">Explore</Text>
         </View>
-      ))}
-    </ScrollView>
+
+        {/* SKILL CARDS */}
+        {skills.map((item) => (
+          <View
+            key={item.id}
+            className="bg-white rounded-3xl border border-card mb-5 overflow-hidden"
+          >
+            {/* IMAGE */}
+            <Image
+              source={{ uri: item.photo }}
+              className="w-full h-44"
+              resizeMode="cover"
+            />
+
+            {/* CONTENT */}
+            <View className="p-4">
+              <Text className="text-textmain text-lg font-semibold">
+                {item.skill}
+              </Text>
+
+              <Text className="text-sm text-gray-600 mt-1">
+                {item.name}
+              </Text>
+
+              <Text className="text-sm text-gray-600 mt-2">
+                {item.description}
+              </Text>
+
+              <TouchableOpacity
+                onPress={() => requestJob(item.skill, item.name)}
+                className="mt-4 bg-textmain py-3 rounded-xl"
+              >
+                <Text className="text-white text-center font-medium">
+                  Request Job
+                </Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
