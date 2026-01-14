@@ -6,6 +6,9 @@
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "jobappfrontend",
+    "experiments": {
+      "reactNativeNewArchitecture": true
+    },
     "userInterfaceStyle": "automatic",
     "newArchEnabled": false,
     "ios": {
@@ -46,6 +49,12 @@
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "d2ca716d-a288-470c-aa9e-9d4a58f9c13a"
+      }
     }
   }
 }

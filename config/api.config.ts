@@ -5,9 +5,7 @@
 
 // Base URL for the backend API
 // Change this to your production URL when deploying
-export const API_BASE_URL = __DEV__ 
-  ? 'http://10.0.2.2:5000/api/v1'  // Android Emulator
-  : 'https://your-production-api.com/api/v1';
+export const API_BASE_URL = 'http://192.168.0.7:5000/api/v1';
 
 // For iOS Simulator, use 'http://localhost:5000/api/v1'
 // For physical device, use your computer's local IP
