@@ -1,7 +1,6 @@
 import { FontAwesome } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
-import { addDoc, collection, serverTimestamp } from "firebase/firestore/lite";
 import React, { useState } from "react";
 import {
   Alert,
@@ -10,12 +9,15 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
-import { db } from "../../firebaseConfig";
 import { SkillsInput } from "./SkillsInput";
+import { completeProfile } from "../../services/auth.service";
+import { useAuth } from "../../context/AuthContext";
 
 export default function UserDetails() {
   const router = useRouter();
+  const { updateUser } = useAuth();
   const [name, setName] = useState("");
   const [age, setAge] = useState("");
   const [skills, setSkills] = useState<string[]>([]);
@@ -35,10 +37,10 @@ export default function UserDetails() {
   };
 
   const handleSubmit = async () => {
-    if (!name || !age || skills.length === 0) {
+    if (!name || skills.length === 0) {
       Alert.alert(
         "Missing info",
-        "Please fill all fields and add at least one skill."
+        "Please fill your name and add at least one skill."
       );
       return;
     }
@@ -46,22 +48,35 @@ export default function UserDetails() {
     try {
       setLoading(true);
 
-      await addDoc(collection(db, "users"), {
+      const response = await completeProfile({
         name,
-        age: Number(age),
+        age: age ? Number(age) : undefined,
         skills,
-        hasAadhaarImage: !!aadhaarImage,
-        createdAt: serverTimestamp(),
+        aadhaarImage: aadhaarImage || undefined,
       });
 
-      Alert.alert("Saved", "Your details have been saved!", [
-        {
-          text: "OK",
-          onPress: () => {
-            router.replace("/jobs" as never);
+      if (response.success) {
+        // Update local user state
+        updateUser({
+          name,
+          skills,
+          isProfileComplete: true,
+        });
+
+        Alert.alert("Saved", "Your profile has been saved!", [
+          {
+            text: "OK",
+            onPress: () => {
+              router.replace("/jobs" as never);
+            },
           },
-        },
-      ]);
+        ]);
+      } else {
+        Alert.alert(
+          "Error",
+          (response as any).message || "Failed to save profile. Please try again."
+        );
+      }
     } catch (error) {
       console.error(error);
       Alert.alert(

@@ -6,16 +6,17 @@ import {
   ScrollView,
   Text,
   TextInput,
-  TouchableOpacity
+  TouchableOpacity,
+  ActivityIndicator,
 } from "react-native";
+import { createJob, updateJob, getJobById } from "../../services/job.service";
 
 type Params = {
   mode?: string; // "create" | "edit"
-  job?: string;  // JSON string when editing
+  jobId?: string;
 };
 
 type JobFormState = {
-  id?: string;
   title: string;
   description: string;
   startTime: string;
@@ -26,11 +27,12 @@ type JobFormState = {
 
 export default function CreateJob() {
   const router = useRouter();
-  const { mode, job } = useLocalSearchParams<Params>();
+  const { mode, jobId } = useLocalSearchParams<Params>();
   const isEdit = mode === "edit";
+  const [loading, setLoading] = useState(false);
+  const [fetchingJob, setFetchingJob] = useState(false);
 
   const [form, setForm] = useState<JobFormState>({
-    id: undefined,
     title: "",
     description: "",
     startTime: "",
@@ -39,59 +41,120 @@ export default function CreateJob() {
     totalTime: "",
   });
 
-  // Prefill when editing
+  // Fetch job data when editing
   useEffect(() => {
-    if (isEdit && job) {
-      try {
-        const parsed = JSON.parse(job as string) as any;
-        setForm({
-          id: parsed.id,
-          title: parsed.title ?? "",
-          description: parsed.description ?? "",
-          startTime: parsed.startTime ?? "",
-          payment: parsed.payment ?? "",
-          locationText: parsed.locationText ?? "",
-          totalTime: parsed.totalTime ?? "",
-        });
-      } catch (e) {
-        console.warn("Invalid job data passed to edit screen", e);
-      }
+    if (isEdit && jobId) {
+      fetchJobData();
     }
-  }, [isEdit, job]);
+  }, [isEdit, jobId]);
+
+  const fetchJobData = async () => {
+    if (!jobId) return;
+    
+    setFetchingJob(true);
+    try {
+      const response = await getJobById(jobId);
+      if (response.success && response.data?.job) {
+        const job = response.data.job;
+        setForm({
+          title: job.title || "",
+          description: job.description || "",
+          startTime: job.startTime || "",
+          payment: job.payment || "",
+          locationText: job.locationText || "",
+          totalTime: job.totalTime || "",
+        });
+      }
+    } catch (error) {
+      console.error("Failed to fetch job:", error);
+      Alert.alert("Error", "Failed to load job data");
+    } finally {
+      setFetchingJob(false);
+    }
+  };
 
   const updateField = (key: keyof JobFormState, value: string) => {
     setForm((prev) => ({ ...prev, [key]: value }));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!form.title.trim() || !form.description.trim()) {
       Alert.alert("Missing Fields", "Please fill at least title and description.");
       return;
     }
 
-    const jobToSend = {
-      id: form.id ?? Date.now().toString(),
-      title: form.title.trim(),
-      description: form.description.trim(),
-      status: "Open",
-      startTime: form.startTime.trim(),
-      payment: form.payment.trim(),
-      locationText: form.locationText.trim(),
-      totalTime: form.totalTime.trim(),
-    };
+    if (!form.payment.trim()) {
+      Alert.alert("Missing Fields", "Please enter payment information.");
+      return;
+    }
 
-    if (isEdit) {
-      router.push({
-        pathname: "/jobs",
-        params: { updatedJob: JSON.stringify(jobToSend) },
-      });
-    } else {
-      router.push({
-        pathname: "/jobs",
-        params: { newJob: JSON.stringify(jobToSend) },
-      });
+    if (!form.locationText.trim()) {
+      Alert.alert("Missing Fields", "Please enter location.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      let response;
+
+      if (isEdit && jobId) {
+        response = await updateJob(jobId, {
+          title: form.title.trim(),
+          description: form.description.trim(),
+          startTime: form.startTime.trim(),
+          payment: form.payment.trim(),
+          locationText: form.locationText.trim(),
+          totalTime: form.totalTime.trim(),
+        } as any);
+      } else {
+        response = await createJob({
+          title: form.title.trim(),
+          description: form.description.trim(),
+          startTime: form.startTime.trim(),
+          payment: form.payment.trim(),
+          locationText: form.locationText.trim(),
+          totalTime: form.totalTime.trim(),
+        });
+      }
+
+      if (response.success) {
+        Alert.alert(
+          "Success",
+          isEdit ? "Job updated successfully" : "Job created successfully",
+          [
+            {
+              text: "OK",
+              onPress: () => router.back(),
+            },
+          ]
+        );
+      } else {
+        Alert.alert("Error", (response as any).message || "Failed to save job");
+      }
+    } catch (error) {
+      console.error("Submit error:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
+
+  if (fetchingJob) {
+    return (
+      <ScrollView
+        contentContainerStyle={{
+          flexGrow: 1,
+          backgroundColor: "#FFF2E6",
+          justifyContent: "center",
+          alignItems: "center",
+        }}
+      >
+        <ActivityIndicator size="large" color="#FF7F50" />
+        <Text className="text-textmuted mt-4">Loading job data...</Text>
+      </ScrollView>
+    );
+  }
 
   return (
     <ScrollView

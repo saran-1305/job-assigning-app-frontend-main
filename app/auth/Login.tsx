@@ -1,4 +1,4 @@
-// app/auth/SignUp.tsx
+// app/auth/Login.tsx
 import { FontAwesome } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
@@ -8,14 +8,17 @@ import {
   TextInput,
   TouchableOpacity,
   View,
+  ActivityIndicator,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { sendOTP } from "../../services/auth.service";
 
-export default function SignUp() {
+export default function Login() {
   const router = useRouter();
   const [phone, setPhone] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     // keep only digits
     const digits = phone.replace(/\D/g, "");
 
@@ -24,21 +27,38 @@ export default function SignUp() {
       return;
     }
 
-    // 👉 Generate a 6-digit OTP (demo only)
-    const otp = Math.floor(100000 + Math.random() * 900000).toString();
-
-    // Show OTP so user can type it on next screen (fake SMS)
-    Alert.alert("OTP sent", `Demo OTP: ${otp}`);
-
-    // ✅ Safer navigation: object style with params
-    router.push({
-      pathname: "/auth/otp",
-      params: {
-        phone: digits,
-        otp,
-        mode: "signup",
-      },
-    } as any);
+    setLoading(true);
+    try {
+      // Format phone with country code
+      const fullPhone = `+91${digits}`;
+      
+      // Send OTP via Firebase
+      const result = await sendOTP(fullPhone);
+      
+      if (result.success) {
+        // Navigate to OTP screen
+        router.push({
+          pathname: "/auth/otp",
+          params: {
+            phone: fullPhone,
+            mode: "login",
+            // For development, we use mock mode
+            mockMode: result.mockMode ? "true" : "false",
+          },
+        } as any);
+        
+        // Store confirmation result globally for OTP verification
+        if (result.confirmationResult) {
+          (global as any).confirmationResult = result.confirmationResult;
+        }
+      } else {
+        Alert.alert("Error", result.error || "Failed to send OTP");
+      }
+    } catch (error: any) {
+      Alert.alert("Error", error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -56,27 +76,35 @@ export default function SignUp() {
     >
       <View className="items-center mb-6">
         <FontAwesome name="paper-plane" size={48} color="textmain" />
-        <Text className="text-3xl mt-8 font-bold text-textmain">
-          Login
-        </Text>
+        <Text className="text-3xl mt-8 font-bold text-textmain">Login</Text>
       </View>
 
       <Text className="text-textmuted font-medium">Phone Number</Text>
-      <TextInput
-        className="bg-card p-3 rounded-xl mt-1 mb-3"
-        placeholder="Enter phone number"
-        keyboardType="phone-pad"
-        value={phone}
-        onChangeText={setPhone}
-      />
+      <View className="flex-row items-center bg-card rounded-xl mt-1 mb-3">
+        <Text className="px-3 text-gray-600">+91</Text>
+        <TextInput
+          className="flex-1 p-3"
+          placeholder="Enter phone number"
+          keyboardType="phone-pad"
+          value={phone}
+          onChangeText={setPhone}
+          maxLength={10}
+          editable={!loading}
+        />
+      </View>
 
       <TouchableOpacity
-        className="bg-accent p-4 rounded-xl mt-4"
+        className={`p-4 rounded-xl mt-4 ${loading ? "bg-gray-400" : "bg-accent"}`}
         onPress={handleSubmit}
+        disabled={loading}
       >
-        <Text className="text-center text-white font-bold text-lg">
-          Continue
-        </Text>
+        {loading ? (
+          <ActivityIndicator size="small" color="white" />
+        ) : (
+          <Text className="text-center text-white font-bold text-lg">
+            Continue
+          </Text>
+        )}
       </TouchableOpacity>
 
       <TouchableOpacity

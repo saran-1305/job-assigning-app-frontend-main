@@ -1,184 +1,280 @@
 import { FontAwesome } from "@expo/vector-icons";
-import { router } from "expo-router";
-import React from "react";
-import { ScrollView, Text, TouchableOpacity, View } from "react-native";
-
-type Job = {
-  id: string;
-  title: string;
-  description: string;
-  payment: string;
-  location: string;
-  totalTime: string;
-  isAccepted?: boolean; // 👈 added
-};
+import { router, useFocusEffect } from "expo-router";
+import React, { useState, useCallback } from "react";
+import { 
+  ScrollView, 
+  Text, 
+  TouchableOpacity, 
+  View, 
+  ActivityIndicator,
+  RefreshControl,
+  Alert
+} from "react-native";
+import { 
+  getAvailableJobs, 
+  getAcceptedJobs, 
+  applyForJob,
+  Job, 
+  AcceptedJob 
+} from "../../services/job.service";
+import { useAuth } from "../../context/AuthContext";
 
 export default function AvailableJobsScreen() {
+  const { user } = useAuth();
+  const [availableJobs, setAvailableJobs] = useState<Job[]>([]);
+  const [acceptedJobs, setAcceptedJobs] = useState<AcceptedJob[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [applyingId, setApplyingId] = useState<string | null>(null);
 
-  const goToJobDetails = (job: Job) => {
+  useFocusEffect(
+    useCallback(() => {
+      fetchData();
+    }, [])
+  );
+
+  const fetchData = async () => {
+    try {
+      const [availableRes, acceptedRes] = await Promise.all([
+        getAvailableJobs(),
+        getAcceptedJobs("Active"),
+      ]);
+
+      if (availableRes.success && availableRes.data?.jobs) {
+        setAvailableJobs(availableRes.data.jobs);
+      }
+
+      if (acceptedRes.success && acceptedRes.data?.acceptedJobs) {
+        setAcceptedJobs(acceptedRes.data.acceptedJobs);
+      }
+    } catch (error) {
+      console.error("Failed to fetch data:", error);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  };
+
+  const onRefresh = () => {
+    setRefreshing(true);
+    fetchData();
+  };
+
+  const handleApply = async (jobId: string) => {
+    setApplyingId(jobId);
+    try {
+      const response = await applyForJob(jobId);
+      if (response.success) {
+        Alert.alert("Success", "Application submitted successfully!");
+        // Update job in list to show applied status
+        setAvailableJobs((prev) =>
+          prev.map((job) =>
+            job.id === jobId
+              ? { ...job, hasApplied: true, applicationStatus: "Applied" }
+              : job
+          )
+        );
+      } else {
+        Alert.alert("Error", (response as any).message || "Failed to apply");
+      }
+    } catch (error) {
+      Alert.alert("Error", "Something went wrong");
+    } finally {
+      setApplyingId(null);
+    }
+  };
+
+  const handleReject = (jobId: string) => {
+    // Just hide from list locally for now
+    setAvailableJobs((prev) => prev.filter((job) => job.id !== jobId));
+  };
+
+  const goToJobDetails = (job: Job, isAccepted: boolean = false) => {
     router.push({
       pathname: "/jobs/jobdetails",
       params: {
-        job: JSON.stringify(job),
+        jobId: job.id,
+        isAccepted: isAccepted ? "true" : "false",
       },
-    });
+    } as any);
   };
+
+  if (loading) {
+    return (
+      <View className="flex-1 bg-[#F0FDF4] items-center justify-center">
+        <ActivityIndicator size="large" color="#166534" />
+      </View>
+    );
+  }
+
+  // Jobs not yet applied to
+  const jobRequests = availableJobs.filter((job) => !job.hasApplied);
+  // Jobs already applied to
+  const appliedJobs = availableJobs.filter((job) => job.hasApplied);
 
   return (
     <View className="flex-1 bg-[#F0FDF4]">
       {/* HEADER */}
       <View className="px-6 pt-14">
         <Text className="text-[#14532D] text-xl">Welcome,</Text>
-        <Text className="text-[#14532D] text-3xl font-bold">Name</Text>
+        <Text className="text-[#14532D] text-3xl font-bold">
+          {user?.name || "User"}
+        </Text>
       </View>
 
-      {/* ACCEPTED JOBS */}
-      <View className="px-6 mt-6">
-        <Text className="text-[#166534] text-lg mb-3">
-          Accepted jobs
-        </Text>
-
-        {/* Card 1 */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() =>
-            goToJobDetails({
-              id: "1",
-              title: "Buy Groceries",
-              description: "Buy groceries and deliver to elderly neighbour.",
-              payment: "₹250",
-              location: "Anna Nagar",
-              totalTime: "1 hour",
-              isAccepted: true, // ✅
-            })
-          }
-        >
-          <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-3">
-            <Text className="text-[#14532D] font-semibold">
-              Buy Groceries
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: 120 }}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
+      >
+        {/* ACCEPTED JOBS */}
+        {acceptedJobs.length > 0 && (
+          <View className="px-6 mt-6">
+            <Text className="text-[#166534] text-lg mb-3">
+              Active Jobs ({acceptedJobs.length})
             </Text>
-            <Text className="text-xs text-gray-600">
-              Anna Nagar • 1 hour
-            </Text>
-          </View>
-        </TouchableOpacity>
 
-        {/* Card 2 */}
-        <TouchableOpacity
-          activeOpacity={0.8}
-          onPress={() =>
-            goToJobDetails({
-              id: "2",
-              title: "Dog Walking",
-              description: "Walk dog in the evening for 30 minutes.",
-              payment: "₹150",
-              location: "T Nagar",
-              totalTime: "30 mins",
-              isAccepted: true, // ✅
-            })
-          }
-        >
-          <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4">
-            <Text className="text-[#14532D] font-semibold">
-              Dog Walking
-            </Text>
-            <Text className="text-xs text-gray-600">
-              T Nagar • 30 mins
-            </Text>
-          </View>
-        </TouchableOpacity>
-      </View>
-
-      {/* JOB REQUESTS */}
-      <View className="px-6 mt-8 flex-1">
-        <Text className="text-[#166534] text-lg mb-3">
-          Job requests
-        </Text>
-
-        <ScrollView showsVerticalScrollIndicator={false}>
-          {/* Request 1 */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() =>
-              goToJobDetails({
-                id: "3",
-                title: "House Cleaning",
-                description: "Basic house cleaning work.",
-                payment: "₹500",
-                location: "Velachery",
-                totalTime: "2 hours",
-                isAccepted: false, // ❌ not accepted yet
-              })
-            }
-          >
-            <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-4">
-              <Text className="text-[#14532D] font-semibold">
-                House Cleaning
-              </Text>
-              <Text className="text-xs text-gray-600 mb-4">
-                Velachery • 2 hours • ₹500
-              </Text>
-
-              <View className="flex-row gap-3">
-                <View className="flex-1 bg-[#166534] py-2 rounded-full">
-                  <Text className="text-center text-white font-medium">
-                    Accept
-                  </Text>
+            {acceptedJobs.map((accepted) => (
+              <TouchableOpacity
+                key={accepted.id}
+                activeOpacity={0.8}
+                onPress={() => goToJobDetails(accepted.jobId as Job, true)}
+              >
+                <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-3">
+                  <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                      <Text className="text-[#14532D] font-semibold">
+                        {accepted.jobId.title}
+                      </Text>
+                      <Text className="text-xs text-gray-600">
+                        {accepted.jobId.locationText} • {accepted.jobId.totalTime || "Flexible"}
+                      </Text>
+                    </View>
+                    <View className="bg-green-100 px-3 py-1 rounded-full">
+                      <Text className="text-xs text-green-700">Active</Text>
+                    </View>
+                  </View>
+                  <TouchableOpacity
+                    onPress={() =>
+                      router.push({
+                        pathname: "/jobs/chat",
+                        params: { chatRoomId: accepted.chatRoomId },
+                      } as any)
+                    }
+                    className="mt-3 border border-[#166534] py-2 rounded-full"
+                  >
+                    <Text className="text-center text-[#166534] font-medium">
+                      Chat with Employer
+                    </Text>
+                  </TouchableOpacity>
                 </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
 
-                <View className="flex-1 border border-[#166534] py-2 rounded-full">
-                  <Text className="text-center text-[#166534] font-medium">
-                    Reject
-                  </Text>
+        {/* APPLIED JOBS */}
+        {appliedJobs.length > 0 && (
+          <View className="px-6 mt-6">
+            <Text className="text-[#166534] text-lg mb-3">
+              Applied Jobs ({appliedJobs.length})
+            </Text>
+
+            {appliedJobs.map((job) => (
+              <TouchableOpacity
+                key={job.id}
+                activeOpacity={0.8}
+                onPress={() => goToJobDetails(job)}
+              >
+                <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-3">
+                  <View className="flex-row justify-between items-start">
+                    <View className="flex-1">
+                      <Text className="text-[#14532D] font-semibold">
+                        {job.title}
+                      </Text>
+                      <Text className="text-xs text-gray-600">
+                        {job.locationText} • {job.payment}
+                      </Text>
+                    </View>
+                    <View className="bg-yellow-100 px-3 py-1 rounded-full">
+                      <Text className="text-xs text-yellow-700">
+                        {job.applicationStatus || "Applied"}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              </TouchableOpacity>
+            ))}
+          </View>
+        )}
+
+        {/* JOB REQUESTS */}
+        <View className="px-6 mt-6">
+          <Text className="text-[#166534] text-lg mb-3">
+            Available Jobs ({jobRequests.length})
+          </Text>
+
+          {jobRequests.length === 0 && (
+            <View className="items-center py-10">
+              <FontAwesome name="briefcase" size={48} color="#ccc" />
+              <Text className="text-gray-500 mt-4 text-center">
+                No new jobs available.{"\n"}Pull down to refresh!
+              </Text>
+            </View>
+          )}
+
+          {jobRequests.map((job) => (
+            <TouchableOpacity
+              key={job.id}
+              activeOpacity={0.8}
+              onPress={() => goToJobDetails(job)}
+            >
+              <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-4">
+                <Text className="text-[#14532D] font-semibold">
+                  {job.title}
+                </Text>
+                <Text className="text-xs text-gray-600 mb-2">
+                  {job.locationText} • {job.totalTime || "Flexible"} • {job.payment}
+                </Text>
+                <Text className="text-sm text-gray-700 mb-4" numberOfLines={2}>
+                  {job.description}
+                </Text>
+
+                <View className="flex-row gap-3">
+                  <TouchableOpacity
+                    onPress={() => handleApply(job.id)}
+                    disabled={applyingId === job.id}
+                    className={`flex-1 py-2 rounded-full ${
+                      applyingId === job.id ? "bg-gray-300" : "bg-[#166534]"
+                    }`}
+                  >
+                    {applyingId === job.id ? (
+                      <ActivityIndicator size="small" color="white" />
+                    ) : (
+                      <Text className="text-center text-white font-medium">
+                        Accept
+                      </Text>
+                    )}
+                  </TouchableOpacity>
+
+                  <TouchableOpacity
+                    onPress={() => handleReject(job.id)}
+                    className="flex-1 border border-[#166534] py-2 rounded-full"
+                  >
+                    <Text className="text-center text-[#166534] font-medium">
+                      Reject
+                    </Text>
+                  </TouchableOpacity>
                 </View>
               </View>
-            </View>
-          </TouchableOpacity>
-
-          {/* Request 2 */}
-          <TouchableOpacity
-            activeOpacity={0.8}
-            onPress={() =>
-              goToJobDetails({
-                id: "4",
-                title: "Babysitting",
-                description: "Evening babysitting required.",
-                payment: "₹400",
-                location: "Adyar",
-                totalTime: "Evening",
-                isAccepted: false, // ❌
-              })
-            }
-          >
-            <View className="bg-white rounded-3xl border border-[#DCFCE7] p-4 mb-4">
-              <Text className="text-[#14532D] font-semibold">
-                Babysitting
-              </Text>
-              <Text className="text-xs text-gray-600 mb-4">
-                Adyar • Evening
-              </Text>
-
-              <View className="flex-row gap-3">
-                <View className="flex-1 bg-[#166534] py-2 rounded-full">
-                  <Text className="text-center text-white">
-                    Accept
-                  </Text>
-                </View>
-
-                <View className="flex-1 border border-[#166534] py-2 rounded-full">
-                  <Text className="text-center text-[#166534]">
-                    Reject
-                  </Text>
-                </View>
-              </View>
-            </View>
-          </TouchableOpacity>
-        </ScrollView>
-      </View>
+            </TouchableOpacity>
+          ))}
+        </View>
+      </ScrollView>
 
       {/* BOTTOM NAV */}
       <View className="flex-row justify-around items-center bg-[#F0FDF4] border-t border-[#DCFCE7] py-3">
-
         <TouchableOpacity
           onPress={() => router.push("/jobs")}
           className="w-16 h-16 rounded-2xl border border-[#14532D] items-center justify-center"
@@ -186,12 +282,9 @@ export default function AvailableJobsScreen() {
           <FontAwesome name="plus" size={22} color="#14532D" />
         </TouchableOpacity>
 
-        <TouchableOpacity
-          onPress={() => router.push("/jobs/jobapplication")}
-          className="w-16 h-16 rounded-2xl bg-[#14532D] items-center justify-center"
-        >
+        <View className="w-16 h-16 rounded-2xl bg-[#14532D] items-center justify-center">
           <FontAwesome name="briefcase" size={22} color="white" />
-        </TouchableOpacity>
+        </View>
 
         <TouchableOpacity
           onPress={() => router.push("/jobs/explore")}
