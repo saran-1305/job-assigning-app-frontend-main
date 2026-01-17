@@ -1,12 +1,16 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+/**
+ * Firebase Configuration
+ * 
+ * NOTE: For React Native with @react-native-firebase, the native SDKs
+ * are configured via google-services.json (Android) and GoogleService-Info.plist (iOS).
+ * 
+ * This file is kept for reference and for any web-only Firebase features.
+ * The actual phone authentication uses the native Firebase SDK.
+ */
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
-const firebaseConfig = {
+// Your Firebase project configuration
+// Make sure this matches your google-services.json
+export const firebaseConfig = {
   apiKey: "AIzaSyANP94pLXsMST7-q8sUfG9zCiU4kJEK7vg",
   authDomain: "job-app-29f3d.firebaseapp.com",
   projectId: "job-app-29f3d",
@@ -16,6 +20,6 @@ const firebaseConfig = {
   measurementId: "G-KC915XBGW8"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+// For React Native Firebase, initialization happens automatically
+// via the native modules when google-services.json is properly configured.
+// No need to call initializeApp() - @react-native-firebase/app handles this.

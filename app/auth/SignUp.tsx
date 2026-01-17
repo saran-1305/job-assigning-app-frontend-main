@@ -31,28 +31,24 @@ export default function SignUp() {
       // Format phone with country code
       const fullPhone = `+91${digits}`;
 
-      // Send OTP via Firebase
+      // Send OTP via Firebase (React Native Firebase handles this natively)
       const result = await sendOTP(fullPhone);
 
       if (result.success) {
-        // Navigate to OTP screen
+        // Navigate to OTP screen with verification ID
         router.push({
           pathname: "/auth/otp",
           params: {
             phone: fullPhone,
+            verificationId: result.verificationId || "",
             mode: "signup",
-            mockMode: result.mockMode ? "true" : "false",
           },
         } as any);
-
-        // Store confirmation result globally for OTP verification
-        if (result.confirmationResult) {
-          (global as any).confirmationResult = result.confirmationResult;
-        }
       } else {
         Alert.alert("Error", result.error || "Failed to send OTP");
       }
     } catch (error: any) {
+      console.error("SignUp error:", error);
       Alert.alert("Error", error.message || "Something went wrong");
     } finally {
       setLoading(false);
